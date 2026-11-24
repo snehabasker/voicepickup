@@ -1,0 +1,34 @@
+# W&B Bayesian sweep over the knobs that matter most for a small causal model.
+# Each trial is a short run (8k steps); Hyperband stops clearly bad trials early.
+program: voicepickup.train
+method: bayes
+metric:
+  name: val/pesq
+  goal: maximize
+early_terminate:
+  type: hyperband
+  min_iter: 2          # in units of logged val/pesq points (eval_every steps)
+  eta: 2
+parameters:
+  train.lr:
+    distribution: log_uniform_values
+    min: 3.0e-4
+    max: 3.0e-3
+  model.rnn_hidden:
+    values: [128, 192, 256]
+  train.loss_lambda:
+    values: [0.1, 0.3, 0.5]
+  data.p_wind:
+    values: [0.0, 0.15, 0.3]
+command:
+  - ${env}
+  - ${interpreter}
+  - -m
+  - voicepickup.train
+  - --config
+  - configs/base.yaml
+  - --set
+  - train.steps=8000
+  - train.eval_every=1000
+  - train.num_workers=5
+  - train.val_pesq_items=40

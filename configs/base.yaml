@@ -1,0 +1,39 @@
+# Default training config. Override any key from the command line with
+#   vp-train --config configs/base.yaml --set train.lr=5e-4 model.rnn_hidden=192
+# W&B sweeps override the same dotted keys (see configs/sweep.yaml).
+seed: 0
+
+data:
+  segment_s: 2.0
+  snr_db: [-5.0, 15.0]
+  level_dbfs: [-35.0, -15.0]
+  p_wind: 0.15          # synthetic wind (not in VoiceBank-DEMAND; matters for headsets)
+  p_second_noise: 0.2
+
+model:
+  channels: [16, 32, 48, 64]
+  rnn_hidden: 256
+  rnn_layers: 2
+  compress: 0.3
+
+train:
+  steps: 60000
+  batch_size: 32
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  warmup_steps: 1000
+  grad_clip: 5.0
+  loss_lambda: 0.3       # Braun & Tashev: weight of the complex term vs magnitude term
+  num_workers: 6
+  log_every: 50
+  eval_every: 2000
+  ckpt_every: 1000
+  val_items: 300         # fixed, seeded validation mixtures (val speakers x val noise mics)
+  val_pesq_items: 60     # PESQ/STOI are CPU-bound; score a subset during training
+  log_audio_items: 3
+
+wandb:
+  project: voicepickup
+  entity: null
+  mode: online           # online | offline | disabled
+  tags: []
