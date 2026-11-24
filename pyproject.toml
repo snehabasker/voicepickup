@@ -1,0 +1,37 @@
+[project]
+name = "voicepickup"
+version = "0.1.0"
+description = "Low-latency speech enhancement for headset voice pickup: data, baselines, causal model, W&B tracking, Slurm sweeps"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "soundfile>=0.12",
+  "pyyaml>=6",
+  "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+metrics = ["pesq>=0.0.4", "pystoi>=0.4", "onnxruntime>=1.18"]
+sim = ["pyroomacoustics>=0.7"]
+train = ["torch>=2.5", "wandb>=0.18", "pillow>=10"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+vp = "voicepickup.cli:main"
+vp-train = "voicepickup.train:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/voicepickup"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
