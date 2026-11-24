@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.egg-info/
+wandb/
+/runs/
+/data/
+*.wav
+!tests/fixtures/*.wav
+.pytest_cache/
+slurm-*.out
+logs/*
+!logs/.gitkeep
+results/**/audio/
