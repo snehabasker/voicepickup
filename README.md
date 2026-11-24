@@ -121,6 +121,35 @@ pytest                              # 30 tests, including causality and metric c
 - The two-mic set is simulated (image-source rooms, synthetic wind), not recorded on a
   real headset.
 
+## How this was built
+
+I built this with Claude Code (an AI coding assistant) as a pair programmer. My part was
+the engineering decisions:
+- the problem framing (headset calls: causal, low-latency, wind),
+- the data splits and the rules against leakage,
+- which baselines to compare against,
+- the acceptance checks.
+
+The assistant wrote most of the implementation inside those rules, which are written down
+in [CLAUDE.md](CLAUDE.md). Commits it co-wrote are marked with a `Co-Authored-By` trailer.
+
+Nothing was accepted on trust. Every result has to pass a check:
+- **Metric validation:** the composite metrics are a port of a MATLAB reference. They were
+  accepted only after reproducing the published scores for the unprocessed test set exactly.
+- **Property tests** instead of "it runs" tests. Examples: changing future input must not
+  change past output (causality), the beamformer must null a rear source and pass the front
+  one in phase, and wind must be low-frequency, gusty and incoherent between mics.
+
+Bugs caught in review, each now covered by a test or a guard:
+
+| Bug | How it was caught | Effect if missed |
+|---|---|---|
+| Beamformer EQ corrected magnitude only and left a 90° phase shift | derived the on-axis response before running anything | SI-SDR destroyed for every two-mic result |
+| LLR became −36 on digitally silent frames | identity check: LLR(x, x) must be 0 | composite scores biased on clips with silence |
+| `.gitignore` rule `data/` also excluded the `src/voicepickup/data/` package | read the staged file list before the first push | published repo would not import |
+| Windows CRLF line endings broke `set -o pipefail` in shell scripts | the script failed on its first run | scripts unusable on Linux/WSL |
+| A test fixture gave PESQ ≈ 1.0 even at 15 dB SNR | sanity-checked the absolute values | synthetic signals don't work for testing perceptual metrics; those tests check ordering only now |
+
 ## References
 
 - Valentini-Botinhao et al., *Investigating RNN-based speech enhancement methods for noise-robust TTS*, SSW 2016 (VoiceBank-DEMAND).
